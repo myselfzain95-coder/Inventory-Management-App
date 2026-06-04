@@ -31,10 +31,17 @@ uvicorn main:app --reload
    
 API Endpoints
 GET /products
+
 Retrieves all products from the database.
+
 POST /products
+
 Creates a new product by accepting name, description, price and quantity.
+
 PUT /products/{id}
+
 Updates an existing product by its ID.
+
 DELETE /products/{id}
+
 Deletes a product from the database by its ID.
