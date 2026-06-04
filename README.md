@@ -30,4 +30,11 @@ uvicorn main:app --reload
 7. Open index.html in your browser
    
 API Endpoints
-MethodEndpointDescriptionGET/productsGet all productsPOST/productsCreate a productPUT/products/{id}Update a productDELETE/products/{id}Delete a product
+GET /products
+Retrieves all products from the database.
+POST /products
+Creates a new product by accepting name, description, price and quantity.
+PUT /products/{id}
+Updates an existing product by its ID.
+DELETE /products/{id}
+Deletes a product from the database by its ID.
