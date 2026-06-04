@@ -29,7 +29,8 @@ CREATE DATABASE inventory_db;
 uvicorn main:app --reload
 7. Open index.html in your browser
    
-API Endpoints
+API Endpoints:
+
 GET /products
 
 Retrieves all products from the database.
