@@ -28,5 +28,6 @@ CREATE DATABASE inventory_db;
 6. Run the app
 uvicorn main:app --reload
 7. Open index.html in your browser
+   
 API Endpoints
 MethodEndpointDescriptionGET/productsGet all productsPOST/productsCreate a productPUT/products/{id}Update a productDELETE/products/{id}Delete a product
