@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Inventory Management App</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #5b4fcf 0%, #7c5cbf 40%, #a06bbf 100%);
+      padding: 24px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .logo { font-size: 24px; font-weight: 800; color: #fff; }
+    .refresh-btn {
+      background: #fff; color: #5b4fcf; border: none;
+      padding: 9px 22px; border-radius: 8px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+    }
+    .refresh-btn:hover { background: #ede8ff; }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 20px;
+      align-items: start;
+    }
+    .left { display: flex; flex-direction: column; gap: 16px; }
+
+    .total-badge {
+      background: rgba(255,255,255,0.9); color: #5b4fcf;
+      font-weight: 700; font-size: 14px;
+      padding: 6px 18px; border-radius: 20px;
+      display: inline-block;
+    }
+
+    .card { background: #fff; border-radius: 14px; padding: 22px; }
+    .card-title { font-size: 17px; font-weight: 700; color: #2d2456; margin-bottom: 16px; }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .form-row2 { margin-bottom: 14px; }
+
+    input[type=text], input[type=number] {
+      width: 100%; padding: 9px 12px;
+      border: 1.5px solid #e0daf7; border-radius: 8px;
+      font-size: 14px; color: #2d2456;
+      outline: none; font-family: inherit;
+    }
+    input:focus { border-color: #7c5cbf; }
+    input::placeholder { color: #aaa; }
+
+    .btn-row { display: flex; gap: 10px; margin-top: 4px; }
+
+    .btn-primary {
+      background: #7c5cbf; color: #fff; border: none;
+      padding: 9px 22px; border-radius: 8px;
+      font-size: 14px; font-weight: 700;
+      cursor: pointer; font-family: inherit;
+    }
+    .btn-primary:hover { background: #5b4fcf; }
+
+    .btn-cancel {
+      background: #f5f3ff; color: #7c5cbf;
+      border: 1.5px solid #e0daf7;
+      padding: 9px 18px; border-radius: 8px;
+      font-size: 14px; font-weight: 500;
+      cursor: pointer; font-family: inherit;
+      display: none;
+    }
+    .btn-cancel:hover { background: #ede8ff; }
+
+    .success-msg {
+      background: #22c55e; color: #fff;
+      padding: 10px 16px; border-radius: 8px;
+      font-size: 14px; font-weight: 500;
+      margin-top: 12px; display: none;
+    }
+    .error-msg {
+      background: #e74c3c; color: #fff;
+      padding: 10px 16px; border-radius: 8px;
+      font-size: 14px; font-weight: 500;
+      margin-top: 12px; display: none;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      font-size: 11px; font-weight: 700; color: #888;
+      letter-spacing: 0.07em; padding: 8px 10px;
+      text-align: left; border-bottom: 1.5px solid #f0eeff;
+      text-transform: uppercase;
+    }
+    tbody tr { border-bottom: 1px solid #f7f5ff; transition: background 0.15s; }
+    tbody tr:hover { background: #faf8ff; }
+    tbody td { padding: 11px 10px; font-size: 14px; color: #2d2456; vertical-align: middle; }
+
+    .price { color: #7c5cbf; font-weight: 700; }
+    .qty-badge {
+      background: #f0eeff; color: #5b4fcf;
+      font-weight: 700; font-size: 13px;
+      padding: 3px 12px; border-radius: 20px;
+      display: inline-block;
+    }
+    .btn-edit {
+      background: #4a90e2; color: #fff; border: none;
+      padding: 5px 14px; border-radius: 7px;
+      font-size: 13px; font-weight: 600;
+      cursor: pointer; margin-right: 6px; font-family: inherit;
+    }
+    .btn-edit:hover { background: #2c6fd6; }
+    .btn-delete {
+      background: #e74c3c; color: #fff; border: none;
+      padding: 5px 14px; border-radius: 7px;
+      font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: inherit;
+    }
+    .btn-delete:hover { background: #c0392b; }
+    .active-row { border-left: 3px solid #7c5cbf; }
+    .info-row td { text-align: center; color: #aaa; padding: 24px; font-style: italic; }
+
+    .right { display: flex; flex-direction: column; gap: 16px; }
+
+    .search-input {
+      width: 100%; padding: 10px 14px;
+      border: 1.5px solid rgba(255,255,255,0.4);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.92);
+      font-size: 14px; color: #2d2456;
+      outline: none; font-family: inherit;
+    }
+    .search-input::placeholder { color: #aaa; }
+
+    .promo-card {
+      background: #fff; border-radius: 14px;
+      padding: 24px 20px; border-top: 4px solid #f5a623;
+    }
+    .promo-icon { font-size: 22px; margin-bottom: 6px; }
+    .promo-title { font-size: 20px; font-weight: 800; color: #2d2456; margin-bottom: 8px; }
+    .promo-title span { color: #7c5cbf; }
+    .promo-sub { font-size: 13px; color: #888; line-height: 1.6; margin-bottom: 16px; }
+    .promo-powered { font-size: 11px; color: #bbb; letter-spacing: 0.05em; text-transform: uppercase; }
+    .promo-powered b { color: #f5a623; font-size: 13px; }
+
+    @media (max-width: 768px) {
+      .main-grid { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="logo">📦 Inventory Management App</div>
+    <button class="refresh-btn" onclick="fetchProducts()">Refresh</button>
+  </div>
+
+  <div class="main-grid">
+
+    <div class="left">
+      <span class="total-badge" id="total-badge">Total: 0</span>
+
+      <div class="card">
+        <div class="card-title" id="form-title">Add Product</div>
+        <div class="form-row">
+          <input type="text"   id="f-name"  placeholder="Name" />
+          <input type="text"   id="f-desc"  placeholder="Description" />
+          <input type="number" id="f-price" placeholder="Price" step="0.01" />
+        </div>
+        <div class="form-row2">
+          <input type="number" id="f-qty" placeholder="Quantity" style="width:130px" />
+        </div>
+        <div class="btn-row">
+          <button class="btn-primary" id="submit-btn" onclick="handleSubmit()">Add</button>
+          <button class="btn-cancel"  id="cancel-btn" onclick="cancelEdit()">Cancel</button>
+        </div>
+        <div class="success-msg" id="success-msg"></div>
+        <div class="error-msg"   id="error-msg"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Products</div>
+        <table>
+          <thead>
+            <tr>
+              <th>ID ↑</th><th>Name</th><th>Description</th>
+              <th>Price</th><th>Quantity</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="product-tbody">
+            <tr class="info-row"><td colspan="6">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="right">
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Search by id, name or description..."
+        oninput="handleSearch(this.value)"
+      />
+      <div class="promo-card">
+        <div class="promo-icon">📦</div>
+        <div class="promo-title">Track. Manage. <span>Grow.</span></div>
+        <div class="promo-sub">
+          Streamline your inventory with smart product management that scales with your business.
+        </div>
+        <div class="promo-powered">POWERED BY <b>INVENTORY MANAGEMENT APP</b></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const API_BASE = "http://localhost:8000";
+
+    let allProducts = [];
+    let editingId   = null;
+    let searchTerm  = "";
+
+    async function fetchProducts() {
+      setTableMsg("Loading...");
+      try {
+        const res = await fetch(`${API_BASE}/products`);
+        if (!res.ok) throw new Error("Could not load products");
+        allProducts = await res.json();
+        renderTable();
+      } catch (err) {
+        setTableMsg("Error: " + err.message, true);
+      }
+    }
+
+    async function createProduct(data) {
+      const res = await fetch(`${API_BASE}/products`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to create product");
+      return res.json();
+    }
+
+    async function updateProduct(id, data) {
+      const res = await fetch(`${API_BASE}/products/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to update product");
+      return res.json();
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm("Delete this product?")) return;
+      try {
+        const res = await fetch(`${API_BASE}/products/${id}`, { method: "DELETE" });
+        if (!res.ok) throw new Error("Failed to delete product");
+        if (editingId === id) cancelEdit();
+        showSuccess("Product deleted");
+        fetchProducts();
+      } catch (err) {
+        showError(err.message);
+      }
+    }
+
+    async function handleSubmit() {
+      const name  = document.getElementById("f-name").value.trim();
+      const desc  = document.getElementById("f-desc").value.trim();
+      const price = parseFloat(document.getElementById("f-price").value);
+      const qty   = parseInt(document.getElementById("f-qty").value);
+
+      if (!name || isNaN(price) || isNaN(qty)) {
+        showError("Name, Price and Quantity are required.");
+        return;
+      }
+
+      const payload = { name, description: desc, price, quantity: qty };
+
+      try {
+        if (editingId !== null) {
+          await updateProduct(editingId, payload);
+          showSuccess("Product updated successfully");
+          cancelEdit();
+        } else {
+          await createProduct(payload);
+          showSuccess("Product created successfully");
+          clearForm();
+        }
+        fetchProducts();
+      } catch (err) {
+        showError(err.message);
+      }
+    }
+
+    function startEdit(id) {
+      const p = allProducts.find(x => x.id === id);
+      if (!p) return;
+      editingId = id;
+      document.getElementById("f-name").value  = p.name;
+      document.getElementById("f-desc").value  = p.description ?? p.desc ?? "";
+      document.getElementById("f-price").value = p.price;
+      document.getElementById("f-qty").value   = p.quantity ?? p.qty ?? "";
+      document.getElementById("form-title").textContent    = "Edit Product";
+      document.getElementById("submit-btn").textContent    = "Update";
+      document.getElementById("cancel-btn").style.display  = "inline-block";
+      document.getElementById("success-msg").style.display = "none";
+      document.getElementById("error-msg").style.display   = "none";
+      renderTable();
+      document.querySelector(".card").scrollIntoView({ behavior: "smooth" });
+    }
+
+    function cancelEdit() {
+      editingId = null;
+      clearForm();
+      document.getElementById("form-title").textContent    = "Add Product";
+      document.getElementById("submit-btn").textContent    = "Add";
+      document.getElementById("cancel-btn").style.display  = "none";
+      renderTable();
+    }
+
+    function clearForm() {
+      ["f-name", "f-desc", "f-price", "f-qty"].forEach(id => {
+        document.getElementById(id).value = "";
+      });
+    }
+
+    function handleSearch(val) {
+      searchTerm = val.toLowerCase();
+      renderTable();
+    }
+
+    function renderTable() {
+      const list = allProducts.filter(p => {
+        const s    = searchTerm;
+        const desc = (p.description ?? p.desc ?? "").toLowerCase();
+        return (
+          String(p.id).includes(s) ||
+          p.name.toLowerCase().includes(s) ||
+          desc.includes(s)
+        );
+      });
+
+      const tbody = document.getElementById("product-tbody");
+      tbody.innerHTML = "";
+
+      if (list.length === 0) {
+        setTableMsg("No products found.");
+        document.getElementById("total-badge").textContent = "Total: 0";
+        return;
+      }
+
+      list.forEach(p => {
+        const desc = p.description ?? p.desc ?? "";
+        const qty  = p.quantity    ?? p.qty  ?? 0;
+        const tr   = document.createElement("tr");
+        if (editingId === p.id) tr.classList.add("active-row");
+        tr.innerHTML = `
+          <td>${p.id}</td>
+          <td><b>${p.name}</b></td>
+          <td style="color:#999">${desc}</td>
+          <td class="price">$${parseFloat(p.price).toFixed(2)}</td>
+          <td><span class="qty-badge">${qty}</span></td>
+          <td>
+            <button class="btn-edit"   onclick="startEdit(${p.id})">Edit</button>
+            <button class="btn-delete" onclick="deleteProduct(${p.id})">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById("total-badge").textContent = `Total: ${allProducts.length}`;
+    }
+
+    function showSuccess(msg) {
+      const el = document.getElementById("success-msg");
+      el.textContent   = msg;
+      el.style.display = "block";
+      document.getElementById("error-msg").style.display = "none";
+      setTimeout(() => el.style.display = "none", 2500);
+    }
+
+    function showError(msg) {
+      const el = document.getElementById("error-msg");
+      el.textContent   = msg;
+      el.style.display = "block";
+      document.getElementById("success-msg").style.display = "none";
+      setTimeout(() => el.style.display = "none", 3000);
+    }
+
+    function setTableMsg(msg, isError = false) {
+      document.getElementById("product-tbody").innerHTML =
+        `<tr class="info-row"><td colspan="6" style="${isError ? 'color:#e74c3c' : ''}">${msg}</td></tr>`;
+    }
+
+    fetchProducts();
+  </script>
+</body>
+</html>
